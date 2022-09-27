@@ -50,8 +50,18 @@
                 <div class="details">
                   <p><span>Armor total:</span> {{ player.armor_total }}</p>
                   <p><span>Health total:</span> {{ player.health_total }}</p>
-                  <p><span>Damage given:</span> {{ player.damage_given }}</p>
-                  <p><span>Damage taken:</span> {{ player.damage_taken }}</p>
+                  <p>
+                    <span>Damage given:</span>
+                    {{
+                      player.damage_given.toLocaleString().replace(/\,/g, ' ')
+                    }}
+                  </p>
+                  <p>
+                    <span>Damage taken:</span>
+                    {{
+                      player.damage_taken.toLocaleString().replace(/\,/g, ' ')
+                    }}
+                  </p>
                   <p><span>Suicides:</span> {{ player.suicides }}</p>
                 </div>
 
@@ -66,7 +76,10 @@
                           :alt="powerup.name"
                         />
                         <p><span>Pickups:</span> {{ powerup.pickups }}</p>
-                        <p><span>Time:</span> {{ powerup.time }}</p>
+                        <p>
+                          <span>Time (min.):</span>
+                          {{ Math.floor(powerup.time / 60000) }}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -93,7 +106,7 @@
                     <div class="weapon" v-for="weapon in player.weapons">
                       <div>
                         <img
-                          :src="`./images/items/${weapon.name.toLowerCase()}.png`"
+                          :src="`./images/items/${weapon.name.toLowerCase()}1.png`"
                           :alt="weapon.name"
                         />
                         <p><span>Hits:</span> {{ weapon.hits }}</p>
@@ -220,7 +233,6 @@ h2 {
   text-transform: uppercase;
 }
 h3 {
-  text-transform: capitalize;
   font-weight: 900;
   font-size: 1.7rem;
   @include border(10px);
