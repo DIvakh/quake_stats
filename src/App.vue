@@ -1,29 +1,354 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
-  <router-view/>
+  <header>
+    <div class="container">
+      <section class="total">
+        <div>
+          <span class="title-mini">Total games:</span>
+          {{ gameData.total_games }}
+        </div>
+        <div>
+          <span class="title-mini">Duration:</span> {{ gameData.duration }}
+        </div>
+      </section>
+      <section class="winners">
+        <span class="title-mini">Wins:</span>
+        <div v-for="winner of gameData.winners" class="winners">
+          {{ winner.name }}: {{ winner.wins }}
+        </div>
+      </section>
+    </div>
+  </header>
+  <main>
+    <!-- ==== MAPS ==== -->
+    <section class="maps">
+      <h2>Maps</h2>
+      <div class="container">
+        <div v-for="map of gameData.maps" class="map">
+          <h3>{{ map.name }}</h3>
+          <div v-for="winner of map.winners">
+            <span> {{ winner.name }}:</span> {{ winner.wins }}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==== PLAYERS ==== -->
+    <section class="players">
+      <h2>Players</h2>
+      <div class="container">
+        <div v-for="player of playersData" class="player">
+          <div>
+            <h3>{{ player.name }}</h3>
+            <div class="player_main">
+              <p><span>Games:</span> {{ player.games }}</p>
+              <p><span>Score:</span> {{ player.score }}</p>
+              <p><span>Kills:</span> {{ player.kills }}</p>
+              <p><span>Deaths:</span> {{ player.deaths }}</p>
+            </div>
+            <div class="player_details">
+              <div class="details_content">
+                <div class="details">
+                  <p><span>Armor total:</span> {{ player.armor_total }}</p>
+                  <p><span>Health total:</span> {{ player.health_total }}</p>
+                  <p><span>Damage given:</span> {{ player.damage_given }}</p>
+                  <p><span>Damage taken:</span> {{ player.damage_taken }}</p>
+                  <p><span>Suicides:</span> {{ player.suicides }}</p>
+                </div>
+
+                <!-- ====Powerups==== -->
+                <div class="powerups">
+                  <p class="subtitle">Powerups:</p>
+                  <div class="wrapper">
+                    <div class="powerup" v-for="powerup in player.powerups">
+                      <div>
+                        <img
+                          :src="`./images/items/${powerup.name.toLowerCase()}.png`"
+                          :alt="powerup.name"
+                        />
+                        <p><span>Pickups:</span> {{ powerup.pickups }}</p>
+                        <p><span>Time:</span> {{ powerup.time }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- ====Items==== -->
+                <div class="items">
+                  <p class="subtitle">Items:</p>
+                  <div class="wrapper">
+                    <div class="item" v-for="item in player.items">
+                      <div>
+                        <img
+                          :src="`./images/items/${item.name.toLowerCase()}.png`"
+                          :alt="item.name"
+                        />
+                        <p><span>Pickups:</span> {{ item.pickups }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- ====Weapons==== -->
+                <div class="weapons">
+                  <p class="subtitle">Weapons:</p>
+                  <div class="wrapper">
+                    <div class="weapon" v-for="weapon in player.weapons">
+                      <div>
+                        <img
+                          :src="`./images/items/${weapon.name.toLowerCase()}.png`"
+                          :alt="weapon.name"
+                        />
+                        <p><span>Hits:</span> {{ weapon.hits }}</p>
+                        <p><span>Shots:</span> {{ weapon.shots }}</p>
+                        <p><span>Kills:</span> {{ weapon.kills }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div @click="test()">TEST</div>
 </template>
 
+<script>
+export default {
+  name: 'App',
+
+  data() {
+    return {
+      ffaLink: 'http://127.0.0.1:8080/api/ffa',
+      playersLink: 'http://127.0.0.1:8080/api/ffa/players',
+      gameData: {},
+      playersData: {}
+    };
+  },
+  methods: {
+    async sendRequest(url) {
+      let response = await fetch(url);
+      let data = await response.json();
+      return data;
+    },
+
+    async getFfa() {
+      this.gameData = await this.sendRequest(this.ffaLink);
+    },
+
+    async getPlayers() {
+      this.playersData = await this.sendRequest(this.playersLink);
+    },
+    test() {
+      console.log(this.gameData);
+      console.log(this.playersData);
+    }
+  },
+  mounted() {
+    this.getFfa();
+    this.getPlayers();
+  }
+};
+</script>
+
 <style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+@import 'assets/scss/container';
+@import 'assets/scss/_normalize';
+@import 'assets/scss/_reset';
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap');
+body {
+  background-color: #1b1f25;
+  color: #d5dfe9;
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
 }
 
-nav {
-  padding: 30px;
+@mixin border($pb) {
+  padding-bottom: $pb;
+  border-bottom: 1px solid transparent;
+  border-image: linear-gradient(
+    to right,
+    rgba(196, 196, 196, 0) 4.2%,
+    #7d7d7d 52.33%,
+    rgba(196, 196, 196, 0) 100.46%
+  );
 
-  a {
-    font-weight: bold;
-    color: #2c3e50;
+  border-image-slice: 1;
+}
 
-    &.router-link-exact-active {
-      color: #42b983;
+main {
+  background-color: #1b1f25;
+  margin-top: 2.2rem;
+
+  .container {
+    border-radius: 5px;
+  }
+}
+.total {
+  display: flex;
+  gap: 20px;
+}
+header {
+  background-color: #16191ed5;
+  z-index: 20;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  backdrop-filter: blur(10px);
+  .container {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    align-items: center;
+    padding: 13px 0;
+  }
+}
+.winners {
+  display: flex;
+  gap: 1rem;
+}
+.title-mini {
+  filter: contrast(0.3);
+}
+h2 {
+  text-align: center;
+  padding-top: 30px;
+  font-size: 3rem;
+  font-weight: 200;
+  text-transform: uppercase;
+}
+h3 {
+  text-transform: capitalize;
+  font-weight: 900;
+  font-size: 1.7rem;
+  @include border(10px);
+}
+.subtitle {
+  font-weight: 100;
+  font-size: 1.35rem;
+  margin: 5px 0 13px 0;
+  text-transform: uppercase;
+}
+.maps {
+  .container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 15px;
+
+    .map {
+      width: calc(100% / 5 - 13px);
+      backdrop-filter: brightness(1) contrast(0.95);
+      border-radius: 5px;
+      min-height: 155px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.192);
+      transition: all 0.2s ease;
+
+      &:hover {
+        backdrop-filter: brightness(1.2) contrast(0.94);
+      }
+
+      h3 {
+        margin-top: 1rem;
+        margin-bottom: 0.75rem;
+
+        & ~ div {
+          filter: contrast(0.3);
+          margin-bottom: 0.3rem;
+        }
+      }
+    }
+  }
+}
+
+h1 {
+  margin: 1rem 0;
+  font-size: 3rem;
+  font-weight: 500;
+  text-align: center;
+}
+.players {
+  .container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 15px;
+    .player {
+      width: calc(100% / 3 - 40px);
+      backdrop-filter: brightness(1) contrast(0.95);
+      border-radius: 5px;
+      min-height: 145px;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.192);
+      transition: all 0.2s ease;
+
+      &:hover {
+        backdrop-filter: brightness(1.2) contrast(0.94);
+      }
+
+      h3 {
+        margin-top: 1rem;
+        margin-bottom: 0.75rem;
+
+        & ~ div {
+          &.player_main {
+            display: flex;
+            justify-content: space-evenly;
+          }
+          span {
+            filter: contrast(0.3);
+          }
+        }
+      }
+      .details {
+        margin-bottom: 20px;
+        margin-top: 20px;
+        @include border(25px);
+        p:not(:last-of-type) {
+          margin-bottom: 5px;
+        }
+      }
+      .powerups,
+      .items {
+        @include border(25px);
+        margin-bottom: 20px;
+        .wrapper {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: space-evenly;
+          gap: 20px;
+
+          img {
+            width: 50px;
+          }
+        }
+      }
+      .weapons {
+        .wrapper {
+          display: flex;
+          flex-direction: column;
+          gap: 15px;
+
+          .weapon {
+            div {
+              img {
+                margin-right: -5px;
+              }
+              display: flex;
+              align-items: center;
+              gap: 20px;
+            }
+          }
+
+          img {
+            width: 50px;
+          }
+        }
+      }
     }
   }
 }
