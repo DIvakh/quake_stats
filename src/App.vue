@@ -3,15 +3,15 @@
     <div class="container">
       <section class="total">
         <div>
-          <span class="title-mini">Total games:</span>
+          <span class="title-mini">total games:</span>
           {{ gameData.total_games }}
         </div>
         <div>
-          <span class="title-mini">Duration:</span> {{ gameData.duration }}
+          <span class="title-mini">duration:</span> {{ gameData.duration }}
         </div>
       </section>
       <section class="winners">
-        <span class="title-mini">Wins:</span>
+        <span class="title-mini">wins:</span>
         <div v-for="winner of gameData.winners" class="winners">
           {{ winner.name }}: {{ winner.wins }}
         </div>
@@ -48,8 +48,18 @@
             <div class="player_details">
               <div class="details_content">
                 <div class="details">
-                  <p><span>Armor total:</span> {{ player.armor_total }}</p>
-                  <p><span>Health total:</span> {{ player.health_total }}</p>
+                  <p>
+                    <span>Armor total:</span>
+                    {{
+                      player.armor_total.toLocaleString().replace(/\,/g, ' ')
+                    }}
+                  </p>
+                  <p>
+                    <span>Health total:</span>
+                    {{
+                      player.health_total.toLocaleString().replace(/\,/g, ' ')
+                    }}
+                  </p>
                   <p>
                     <span>Damage given:</span>
                     {{
@@ -122,11 +132,14 @@
         </div>
       </div>
     </section>
+
+    <pagination :dayData="dayData" />
   </main>
   <div @click="test()">TEST</div>
 </template>
 
 <script>
+import pagination from './components/pagination';
 export default {
   name: 'App',
 
@@ -134,8 +147,12 @@ export default {
     return {
       ffaLink: 'http://127.0.0.1:8080/api/ffa',
       playersLink: 'http://127.0.0.1:8080/api/ffa/players',
+      dayLink: `http://127.0.0.1:8080/api/ffa/matches?page=1&perpage=10`,
+      pageCounter: 1,
+
       gameData: {},
-      playersData: {}
+      playersData: {},
+      dayData: {}
     };
   },
   methods: {
@@ -152,15 +169,21 @@ export default {
     async getPlayers() {
       this.playersData = await this.sendRequest(this.playersLink);
     },
+    async getGameDay() {
+      this.dayData = await this.sendRequest(this.dayLink);
+    },
     test() {
       console.log(this.gameData);
       console.log(this.playersData);
+      console.log(this.dayData);
     }
   },
   mounted() {
     this.getFfa();
     this.getPlayers();
-  }
+    this.getGameDay();
+  },
+  components: { pagination }
 };
 </script>
 
@@ -224,6 +247,7 @@ header {
 }
 .title-mini {
   filter: contrast(0.3);
+  font-size: 1.05rem;
 }
 h2 {
   text-align: center;
