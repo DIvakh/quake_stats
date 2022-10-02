@@ -143,7 +143,7 @@ export default {
     this.getGameData(1);
   },
   mounted() {
-    window.onscroll = this.debounce(this.scrollingData, 500);
+    window.onscroll = this.debounce(this.scrollingData, 300);
   },
   components: { spinner }
 };
