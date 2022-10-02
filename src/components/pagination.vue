@@ -12,7 +12,11 @@
           </div>
         </div>
         <div class="game-players">
-          <div class="player" v-for="(player, i) in game.players">
+          <div
+            class="player"
+            v-for="(player, i) in game.players"
+            :class="game.players.length === 5 ? 'to-left' : ''"
+          >
             <div class="player-header">
               {{ player.name }}
             </div>
@@ -49,17 +53,15 @@
               </div>
               <!-- ==== Items ==== -->
               <div class="items">
-                <div>
-                  <div class="wrapper">
-                    <div class="item" v-for="item in player.items">
-                      <div class="item-container">
-                        <img
-                          :src="`./images/items/${item.name.toLowerCase()}.png`"
-                          :alt="item.name"
-                        />
+                <div class="wrapper">
+                  <div class="item" v-for="item in player.items">
+                    <div class="item-container">
+                      <img
+                        :src="`./images/items/${item.name.toLowerCase()}.png`"
+                        :alt="item.name"
+                      />
 
-                        <p><span>Pickups:</span> {{ item.pickups }}</p>
-                      </div>
+                      <p><span>Pickups:</span> {{ item.pickups }}</p>
                     </div>
                   </div>
                 </div>
@@ -90,18 +92,60 @@
       </div>
     </div>
   </section>
+  <spinner />
 </template>
 <script>
+import spinner from './spinner.vue';
 export default {
   data() {
-    return {};
+    return {
+      dayData: [],
+      counterPage: 1
+    };
   },
-  props: { dayData: { type: Object } },
+
   methods: {
-    test() {
-      console.log(this.dayData);
+    scrollingData() {
+      let bottomOfWindow =
+        document.documentElement.scrollTop + window.innerHeight ===
+        document.documentElement.offsetHeight;
+
+      if (bottomOfWindow) {
+        this.counterPage++;
+
+        this.getGameData(this.counterPage);
+      }
+    },
+    async getGameData(page) {
+      let response = await fetch(
+        `http://127.0.0.1:8080/api/ffa/matches?page=${page}&perpage=10`
+      );
+      let data = await response.json();
+
+      for (let item of data) {
+        this.dayData.push(item);
+      }
+      document.querySelector('.spinner').classList.add('hidden');
+    },
+    debounce(fn, timer) {
+      let timeout;
+
+      return function (...args) {
+        document.querySelector('.spinner').classList.remove('hidden');
+        clearTimeout(timeout);
+        return new Promise((resolve) => {
+          timeout = setTimeout(() => resolve(fn(...args)), timer);
+        });
+      };
     }
-  }
+  },
+  beforeMount() {
+    this.getGameData(1);
+  },
+  mounted() {
+    window.onscroll = this.debounce(this.scrollingData, 500);
+  },
+  components: { spinner }
 };
 </script>
 <style lang="scss">
@@ -126,9 +170,9 @@ section.daydata {
     display: flex;
     padding: 15px;
     flex-wrap: wrap;
-    gap: 35px;
+    gap: 25px;
     .game {
-      width: calc(50% - 60px);
+      width: calc(50% - 45px);
       backdrop-filter: brightness(1) contrast(0.95);
       border-radius: 5px;
 
@@ -146,19 +190,36 @@ section.daydata {
       h3 + div {
         margin-top: 15px;
         @include border(15px);
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
       }
     }
 
     .game-players {
       display: flex;
+      justify-content: left;
+      flex-wrap: wrap;
 
       .player {
+        margin: auto;
         margin-top: 15px;
-        width: calc(100% / 3);
+
+        &.to-left:last-of-type {
+          margin-left: 10px;
+        }
+        width: auto;
         .player-data,
         .player-header {
           text-align: center;
-          margin-bottom: 10px;
+          margin-bottom: 15px;
+        }
+
+        .player-data {
+          @include border(15px);
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
         }
         .player-header {
           font-size: 1.2rem;
@@ -167,19 +228,29 @@ section.daydata {
         .powerups,
         .items,
         .weapons {
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
+          margin-bottom: 20px;
+          .wrapper {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 20px;
+          }
         }
         img {
-          width: 30px;
+          width: 40px;
+          align-self: center;
+          margin-right: 20px;
+          margin-left: -10px;
+          & + p {
+            align-self: center;
+          }
+        }
+        div.text {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
           align-self: center;
         }
-
-        // .player-header,
-        // .player-data {
-        //   text-align: center;
-        // }
 
         .powerups {
           .powerup {

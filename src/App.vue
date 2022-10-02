@@ -133,9 +133,8 @@
       </div>
     </section>
 
-    <pagination :dayData="dayData" />
+    <pagination />
   </main>
-  <div @click="test()">TEST</div>
 </template>
 
 <script>
@@ -151,8 +150,7 @@ export default {
       pageCounter: 1,
 
       gameData: {},
-      playersData: {},
-      dayData: {}
+      playersData: {}
     };
   },
   methods: {
@@ -168,20 +166,11 @@ export default {
 
     async getPlayers() {
       this.playersData = await this.sendRequest(this.playersLink);
-    },
-    async getGameDay() {
-      this.dayData = await this.sendRequest(this.dayLink);
-    },
-    test() {
-      console.log(this.gameData);
-      console.log(this.playersData);
-      console.log(this.dayData);
     }
   },
-  mounted() {
+  beforeMount() {
     this.getFfa();
     this.getPlayers();
-    this.getGameDay();
   },
   components: { pagination }
 };
