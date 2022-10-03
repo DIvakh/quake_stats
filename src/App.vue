@@ -146,7 +146,6 @@ export default {
     return {
       ffaLink: 'http://127.0.0.1:8080/api/ffa',
       playersLink: 'http://127.0.0.1:8080/api/ffa/players',
-      dayLink: `http://127.0.0.1:8080/api/ffa/matches?page=1&perpage=10`,
       pageCounter: 1,
 
       gameData: {},
@@ -155,9 +154,13 @@ export default {
   },
   methods: {
     async sendRequest(url) {
-      let response = await fetch(url);
-      let data = await response.json();
-      return data;
+      try {
+        let response = await fetch(url);
+        let data = await response.json();
+        return data;
+      } catch (e) {
+        console.error(e);
+      }
     },
 
     async getFfa() {
@@ -228,11 +231,24 @@ header {
     gap: 50px;
     align-items: center;
     padding: 13px 0;
+
+    @media (max-width: 599px) {
+      flex-direction: column;
+      gap: 10px;
+      * {
+        align-self: center;
+      }
+    }
   }
 }
 .winners {
   display: flex;
   gap: 1rem;
+
+  @media (max-width: 599px) {
+    gap: 5px;
+    flex-wrap: wrap;
+  }
 }
 .title-mini {
   filter: contrast(0.3);
@@ -244,6 +260,10 @@ h2 {
   font-size: 3rem;
   font-weight: 200;
   text-transform: uppercase;
+
+  @media (max-width: 599px) {
+    padding-top: 50px;
+  }
 }
 h3 {
   font-weight: 900;
@@ -271,6 +291,10 @@ h3 {
       text-align: center;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.192);
       transition: all 0.2s ease;
+
+      @media (max-width: 599px) {
+        width: calc(100% / 2 - 10px);
+      }
 
       &:hover {
         backdrop-filter: brightness(1.2) contrast(0.94);
@@ -310,6 +334,10 @@ h1 {
       text-align: center;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.192);
       transition: all 0.2s ease;
+
+      @media (max-width: 599px) {
+        width: 100%;
+      }
 
       &:hover {
         backdrop-filter: brightness(1.2) contrast(0.94);

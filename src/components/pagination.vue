@@ -106,27 +106,29 @@ export default {
 
   methods: {
     scrollingData() {
-      let bottomOfWindow =
-        document.documentElement.scrollTop + window.innerHeight ===
-        document.documentElement.offsetHeight;
+      let windowRelativeBottom =
+        document.documentElement.getBoundingClientRect().bottom;
 
-      if (bottomOfWindow) {
+      if (windowRelativeBottom < document.documentElement.clientHeight + 100) {
         this.counterPage++;
-
         this.getGameData(this.counterPage);
       }
     },
     async getGameData(page) {
-      let response = await fetch(
-        `http://127.0.0.1:8080/api/ffa/matches?page=${page}&perpage=10`
-      );
-      let data = await response.json();
-
-      for (let item of data) {
-        this.dayData.push(item);
+      try {
+        let response = await fetch(
+          `http://127.0.0.1:8080/api/ffa/matches?page=${page}&perpage=6`
+        );
+        let data = await response.json();
+        for (let item of data) {
+          this.dayData.push(item);
+        }
+        document.querySelector('.spinner').classList.add('hidden');
+      } catch (e) {
+        console.error(e);
       }
-      document.querySelector('.spinner').classList.add('hidden');
     },
+
     debounce(fn, timer) {
       let timeout;
 
@@ -172,7 +174,12 @@ section.daydata {
     flex-wrap: wrap;
     gap: 25px;
     .game {
-      width: calc(50% - 45px);
+      // width: calc(50% - 45px);
+      width: 100%;
+
+      @media (max-width: 599px) {
+        width: 100%;
+      }
       backdrop-filter: brightness(1) contrast(0.95);
       border-radius: 5px;
 
@@ -243,6 +250,11 @@ section.daydata {
           margin-left: -10px;
           & + p {
             align-self: center;
+          }
+
+          @media (max-width: 599px) {
+            margin-right: 10px;
+            margin-left: 0;
           }
         }
         div.text {
