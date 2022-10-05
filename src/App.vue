@@ -11,8 +11,8 @@
         </div>
       </section>
       <section class="winners">
-        <span class="title-mini">wins:</span>
-        <div v-for="winner of gameData.winners" class="winners">
+        <span class="title-mini">wins:&nbsp;</span>
+        <div v-for="winner of gameData.winners" class="winner">
           {{ winner.name }}: {{ winner.wins }}
         </div>
       </section>
@@ -144,8 +144,8 @@ export default {
 
   data() {
     return {
-      ffaLink: 'http://127.0.0.1:8080/api/ffa',
-      playersLink: 'http://127.0.0.1:8080/api/ffa/players',
+      ffaLink: '/api/ffa',
+      playersLink: '/api/ffa/players',
       pageCounter: 1,
 
       gameData: {},
@@ -216,6 +216,11 @@ main {
 .total {
   display: flex;
   gap: 20px;
+
+  @media (min-width: 600px) and (max-width: 899px) {
+    flex-grow: 1;
+    gap: 10px;
+  }
 }
 header {
   background-color: #16191ed5;
@@ -226,28 +231,48 @@ header {
   right: 0;
   backdrop-filter: blur(10px);
   .container {
+    width: calc(100% - 20px);
     display: flex;
     justify-content: center;
     gap: 50px;
     align-items: center;
     padding: 13px 0;
 
+    * {
+      align-self: center;
+    }
     @media (max-width: 599px) {
       flex-direction: column;
       gap: 10px;
-      * {
-        align-self: center;
-      }
+    }
+    @media (min-width: 600px) and (max-width: 899px) {
+      gap: 0px;
     }
   }
 }
 .winners {
   display: flex;
-  gap: 1rem;
+  // gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  @media (min-width: 600px) and (max-width: 899px) {
+    flex-shrink: 2;
+  }
 
   @media (max-width: 599px) {
     gap: 5px;
-    flex-wrap: wrap;
+  }
+  .winner {
+    margin-right: 1rem;
+
+    @media (max-width: 599px) {
+      margin-right: 8px;
+    }
+
+    &:last-of-type {
+      margin-right: 0;
+    }
   }
 }
 .title-mini {
@@ -262,7 +287,7 @@ h2 {
   text-transform: uppercase;
 
   @media (max-width: 599px) {
-    padding-top: 50px;
+    padding-top: 65px;
   }
 }
 h3 {
@@ -293,12 +318,12 @@ h3 {
       transition: all 0.2s ease;
 
       @media (max-width: 599px) {
-        width: calc(100% / 2 - 10px);
+        width: calc(100% / 2 - 8px);
       }
 
-      &:hover {
-        backdrop-filter: brightness(1.2) contrast(0.94);
-      }
+      // &:hover {
+      //   backdrop-filter: brightness(1.2) contrast(0.94);
+      // }
 
       h3 {
         margin-top: 1rem;
@@ -339,9 +364,9 @@ h1 {
         width: 100%;
       }
 
-      &:hover {
-        backdrop-filter: brightness(1.2) contrast(0.94);
-      }
+      // &:hover {
+      //   backdrop-filter: brightness(1.2) contrast(0.94);
+      // }
 
       h3 {
         margin-top: 1rem;

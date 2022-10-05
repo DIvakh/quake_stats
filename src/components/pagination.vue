@@ -3,88 +3,58 @@
     <h2>Games</h2>
     <div class="container">
       <div class="game" v-for="game in dayData">
-        <div class="game-header">
-          <h3>{{ game.map }}</h3>
-          <div>
-            <p><span>type: </span>{{ game.type }}</p>
-            <p><span>duration: </span>{{ game.duration }}</p>
-            <p><span>date: </span>{{ game.datetime }}</p>
-          </div>
+        <h3>{{ game.map }}</h3>
+        <div class="game-description">
+          <p><span>type: </span>{{ game.type }}</p>
+          <p>
+            <span>duration: </span>{{ Math.floor(game.duration / 60) }} min.
+          </p>
+          <p><span>date: </span>{{ game.datetime }}</p>
         </div>
-        <div class="game-players">
-          <div
-            class="player"
-            v-for="(player, i) in game.players"
-            :class="game.players.length === 5 ? 'to-left' : ''"
-          >
-            <div class="player-header">
-              {{ player.name }}
-            </div>
-            <div class="player-data">
+        <div class="game-container">
+          <div v-for="player in game.players" class="player">
+            <h5>{{ player.name }}</h5>
+            <div class="player-description">
               <p><span>score: </span>{{ player.score }}</p>
-              <p><span>armor total: </span>{{ player.armor_total }}</p>
-              <p><span>health total: </span>{{ player.health_total }}</p>
+              <p><span>kills: </span>{{ player.kills }}</p>
+              <p><span>deaths: </span>{{ player.deaths }}</p>
+              <p><span>suicides: </span>{{ player.suicides }}</p>
               <p><span>damage given: </span>{{ player.damage_given }}</p>
               <p><span>damage taken: </span>{{ player.damage_taken }}</p>
-              <p><span>deaths: </span>{{ player.deaths }}</p>
-              <p><span>kills: </span>{{ player.kills }}</p>
-              <p><span>suicides: </span>{{ player.suicides }}</p>
+              <p><span>health total: </span>{{ player.health_total }}</p>
+              <p><span>armor total: </span>{{ player.armor_total }}</p>
             </div>
-            <div class="icons">
-              <!-- ==== Powerups ==== -->
-              <div class="powerups">
-                <div class="wrapper">
-                  <div class="powerup" v-for="powerup in player.powerups">
-                    <div class="powerup-container">
-                      <img
-                        :src="`./images/items/${powerup.name.toLowerCase()}.png`"
-                        :alt="powerup.name"
-                      />
-                      <div class="text">
-                        <p><span>Pickups:</span> {{ powerup.pickups }}</p>
-                        <p>
-                          <span>Time (min.):</span>
-                          {{ Math.floor(powerup.time / 60000) }}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            <div class="player-weapons">
+              <div class="weapon-container" v-for="weapon in player.weapons">
+                <img
+                  :src="`/images/items/${weapon.name.toLowerCase()}1.png`"
+                  :alt="`${weapon.name}.png`"
+                />
+                <p>{{ weapon.kills }}&nbsp;/&nbsp;</p>
+                <p>{{ weapon.hits }}&nbsp;/&nbsp;</p>
+                <p>{{ weapon.shots }}</p>
               </div>
-              <!-- ==== Items ==== -->
-              <div class="items">
-                <div class="wrapper">
-                  <div class="item" v-for="item in player.items">
-                    <div class="item-container">
-                      <img
-                        :src="`./images/items/${item.name.toLowerCase()}.png`"
-                        :alt="item.name"
-                      />
+            </div>
 
-                      <p><span>Pickups:</span> {{ item.pickups }}</p>
-                    </div>
-                  </div>
-                </div>
+            <div class="player-items">
+              <div class="item-container" v-for="item in player.items">
+                <img
+                  :src="`/images/items/${item.name.toLowerCase()}.png`"
+                  :alt="`${item.name}.png`"
+                />
+                <p>{{ item.pickups }}</p>
               </div>
+            </div>
 
-              <!-- ====Weapons==== -->
-
-              <div class="weapons">
-                <div class="wrapper">
-                  <div class="weapon" v-for="weapon in player.weapons">
-                    <div class="weapon-container">
-                      <img
-                        :src="`./images/items/${weapon.name.toLowerCase()}1.png`"
-                        :alt="weapon.name"
-                      />
-                      <div class="text">
-                        <p><span>Hits:</span> {{ weapon.hits }}</p>
-                        <p><span>Shots:</span> {{ weapon.shots }}</p>
-                        <p><span>Kills:</span> {{ weapon.kills }}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            <div class="player-powerups">
+              <div class="powerup-container" v-for="powerup in player.powerups">
+                <img
+                  :src="`/images/items/${powerup.name.toLowerCase()}.png`"
+                  :alt="`${powerup.name}.png`"
+                />
+                <p>
+                  {{ Math.floor(powerup.time / 1000) }}s ({{ powerup.pickups }})
+                </p>
               </div>
             </div>
           </div>
@@ -108,17 +78,19 @@ export default {
     scrollingData() {
       let windowRelativeBottom =
         document.documentElement.getBoundingClientRect().bottom;
+      let step = 100;
+      if (window.screen.width < 900) {
+        step = 250;
+      }
 
-      if (windowRelativeBottom < document.documentElement.clientHeight + 100) {
+      if (windowRelativeBottom < document.documentElement.clientHeight + step) {
         this.counterPage++;
         this.getGameData(this.counterPage);
       }
     },
     async getGameData(page) {
       try {
-        let response = await fetch(
-          `http://127.0.0.1:8080/api/ffa/matches?page=${page}&perpage=6`
-        );
+        let response = await fetch(`/api/ffa/matches?page=${page}&perpage=6`);
         let data = await response.json();
         for (let item of data) {
           this.dayData.push(item);
@@ -174,115 +146,92 @@ section.daydata {
     flex-wrap: wrap;
     gap: 25px;
     .game {
-      // width: calc(50% - 45px);
       width: 100%;
 
-      @media (max-width: 599px) {
-        width: 100%;
-      }
-      backdrop-filter: brightness(1) contrast(0.95);
       border-radius: 5px;
 
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.192);
-      transition: all 0.2s ease;
-      padding: 15px;
-      &:hover {
-        backdrop-filter: brightness(1.2) contrast(0.94);
-      }
+      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.192);
 
-      .game-header {
-        text-align: center;
+      h3 {
+        padding: 15px;
+        border-radius: 5px 5px 0 0;
       }
-
-      h3 + div {
-        margin-top: 15px;
-        @include border(15px);
+      h5 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        line-height: 1.5rem;
+      }
+      .game-description {
+        font-size: 1.1rem;
         display: flex;
-        flex-direction: column;
-        gap: 5px;
+        flex-wrap: wrap;
+        gap: 30px;
+        padding-left: 15px;
       }
-    }
-
-    .game-players {
-      display: flex;
-      justify-content: left;
-      flex-wrap: wrap;
+      .game-description {
+        padding-bottom: 15px;
+      }
+      h3,
+      .game-description {
+        margin-top: 0;
+        border: 0;
+        // background-color: rgb(70, 78, 91);
+        // background-color: rgb(26, 29, 34);
+        background-color: rgb(32, 36, 42);
+      }
 
       .player {
-        margin: auto;
-        margin-top: 15px;
-
-        &.to-left:last-of-type {
-          margin-left: 10px;
+        padding: 15px 15px;
+        padding-top: 0;
+        &:first-of-type {
+          padding-top: 10px;
         }
-        width: auto;
-        .player-data,
-        .player-header {
-          text-align: center;
-          margin-bottom: 15px;
+        backdrop-filter: brightness(1) contrast(0.95);
+        // @include border(25px);
+        transition: all 0.2s ease;
+
+        &:last-of-type {
+          border: none;
+          padding-bottom: 0;
         }
 
-        .player-data {
-          @include border(15px);
+        // &:hover {
+        //   backdrop-filter: brightness(1.2) contrast(0.94);
+        // }
+        .player-description {
           display: flex;
-          flex-direction: column;
-          gap: 5px;
+          flex-wrap: wrap;
+          justify-content: flex-start;
+          gap: 30px;
+          padding: 15px 0 0 0;
         }
-        .player-header {
+        .player-weapons,
+        .player-items,
+        .player-powerups {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: flex-start;
+          gap: 30px;
+          padding: 30px 0 0 0;
+        }
+        .player-powerups {
+          padding-bottom: 15px;
+          img {
+            width: 1.3rem !important;
+          }
+        }
+
+        .weapon-container,
+        .item-container,
+        .powerup-container {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
           font-size: 1.2rem;
-          font-weight: 600;
-        }
-        .powerups,
-        .items,
-        .weapons {
-          margin-bottom: 20px;
-          .wrapper {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            gap: 20px;
-          }
-        }
-        img {
-          width: 40px;
-          align-self: center;
-          margin-right: 20px;
-          margin-left: -10px;
-          & + p {
-            align-self: center;
-          }
 
-          @media (max-width: 599px) {
-            margin-right: 10px;
-            margin-left: 0;
-          }
-        }
-        div.text {
-          display: flex;
-          flex-direction: column;
-          gap: 5px;
-          align-self: center;
-        }
-
-        .powerups {
-          .powerup {
-            div.powerup-container {
-              display: flex;
-            }
-          }
-        }
-        .items {
-          .item {
-            div.item-container {
-              display: flex;
-            }
-          }
-        }
-        .weapons {
-          .weapon {
-            div.weapon-container {
-              display: flex;
-            }
+          img {
+            margin-right: 5px;
+            width: 1.21rem;
           }
         }
       }
