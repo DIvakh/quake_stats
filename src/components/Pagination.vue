@@ -62,10 +62,10 @@
       </div>
     </div>
   </section>
-  <spinner />
+  <Spinner />
 </template>
 <script>
-import spinner from './spinner.vue';
+import Spinner from './Spinner.vue';
 export default {
   data() {
     return {
@@ -92,6 +92,7 @@ export default {
       try {
         let response = await fetch(`/api/ffa/matches?page=${page}&perpage=6`);
         let data = await response.json();
+        console.log(data);
         for (let item of data) {
           this.dayData.push(item);
         }
@@ -119,7 +120,7 @@ export default {
   mounted() {
     window.onscroll = this.debounce(this.scrollingData, 300);
   },
-  components: { spinner }
+  components: { Spinner }
 };
 </script>
 <style lang="scss">

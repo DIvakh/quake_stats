@@ -73,6 +73,10 @@
                     }}
                   </p>
                   <p><span>Suicides:</span> {{ player.suicides }}</p>
+                  <p>
+                    <span>Telefrags:</span>
+                    {{ player.score - player.kills + player.suicides }}
+                  </p>
                 </div>
 
                 <!-- ====Powerups==== -->
@@ -133,12 +137,14 @@
       </div>
     </section>
 
-    <pagination />
+    <Pagination />
+    <Logs />
   </main>
 </template>
 
 <script>
-import pagination from './components/pagination';
+import Pagination from './components/Pagination';
+import Logs from './components/Logs';
 export default {
   name: 'App',
 
@@ -175,7 +181,7 @@ export default {
     this.getFfa();
     this.getPlayers();
   },
-  components: { pagination }
+  components: { Pagination, Logs }
 };
 </script>
 
