@@ -19,6 +19,7 @@
     </div>
   </header>
   <main>
+    <Logs />
     <!-- ==== MAPS ==== -->
     <section class="maps">
       <h2>Maps</h2>
@@ -138,7 +139,6 @@
     </section>
 
     <Pagination />
-    <Logs />
   </main>
 </template>
 
