@@ -2,30 +2,36 @@
   <section class="logs">
     <h2>LOGS</h2>
     <div class="container">
-      <table v-for="game of tableLogs" :data-id="game.id">
-        <thead>
-          <tr>
-            <td>
-              Date: &nbsp;
-              {{ game.date.replace(/[A-Z]|\.\d+/gm, ' ') }}
-            </td>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <!-- <td class="empty"></td> -->
-            <td v-for="(kills, player) in game.kills">
-              {{ player }}
-            </td>
-          </tr>
-          <tr v-for="(kills, player, i) in game.kills">
-            <td>{{ player }}</td>
-            <td v-for="kill in kills">
-              {{ kill }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="tables">
+        <table
+          @click="clickHandler"
+          v-for="game of tableLogs"
+          :data-id="game.id"
+        >
+          <thead>
+            <tr>
+              <th>
+                date: &nbsp;
+                {{ game.date.replace(/[A-Z]|\.\d+/gm, ' ') }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="row">
+              <td class="center" v-for="(kills, player) in game.kills">
+                {{ player }}
+              </td>
+            </tr>
+            <tr class="row" v-for="(kills, player, i) in game.kills">
+              <td>{{ player }}</td>
+              <td class="center" v-for="kill in kills">
+                {{ kill }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <Chart :logs="logs" :id="id" />
     </div>
   </section>
 </template>
@@ -34,20 +40,24 @@ import Chart from './Chart.vue';
 export default {
   data() {
     return {
-      logs: [],
       tableLogs: [],
-      counterPage: 1
+      counterPage: 1,
+      id: ''
     };
   },
+  props: {
+    logs: {
+      type: Array,
+      required: true
+    }
+  },
+  components: { Chart },
   methods: {
-    async getLogsData() {
-      let response = await fetch('/api/ffa/logs?page=1&perpage=20');
-      let data = await response.json();
-      this.logs = data;
-
-      this.parseLogData();
+    clickHandler(e) {
+      this.id = e.currentTarget.dataset.id;
     },
     parseLogData() {
+      this.id = this.logs[0].id;
       for (let game of this.logs) {
         let sorted = this.groupBy(game.kills, 'killer');
         let gameObj = {};
@@ -94,7 +104,8 @@ export default {
       }
     },
     groupBy(arr, item) {
-      return arr
+      let newArr = arr.slice(0);
+      return newArr
         .sort((a, b) => {
           return a.killer > b.killer ? 1 : -1;
         })
@@ -115,43 +126,56 @@ export default {
     },
     renderTable() {
       let tables = document.querySelectorAll('table');
-
       tables.forEach((e) => {
-        e.querySelectorAll('tr').forEach((el, i) => {
+        let counter = 0;
+        e.querySelectorAll('tr.row').forEach((el, i, array) => {
           let emptyCell = document.createElement('td');
           emptyCell.textContent = ' ';
           emptyCell.classList.add('empty');
+
           el.querySelectorAll('td').forEach((elem, ind, arr) => {
-            if (i === ++ind) {
+            if (ind === counter) {
               elem.before(emptyCell);
+            } else if (counter === arr.length && i === array.length - 1) {
+              elem.after(emptyCell);
             }
           });
+          counter++;
         });
       });
     },
     sort(obj) {
       return Object.fromEntries(
         Object.entries(obj).sort(([a], [b]) => {
-          console.log(a);
           return a < b ? -1 : 1;
         })
       );
     }
   },
-  beforeMount() {
-    this.getLogsData();
-    console.log(this.tableLogs);
+  watch: {
+    logs: {
+      required: true,
+      async handler() {
+        await this.parseLogData();
+        await this.renderTable();
+      }
+    }
   },
 
-  updated() {
-    this.renderTable();
-  },
-  components: { Chart }
+  updated() {}
 };
 </script>
 <style lang="scss">
 .container {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  .tables,
+  .charts {
+    width: 50%;
+  }
   table {
+    cursor: pointer;
     margin: 50px auto;
     font-size: 1.15rem;
     tbody {
@@ -159,6 +183,18 @@ export default {
         padding: 10px;
         border: 1px solid white;
         min-width: 100px;
+        &.empty {
+          background: repeating-linear-gradient(
+            -60deg,
+            #555 0,
+            #555 1px,
+            transparent 1px,
+            transparent 5px
+          );
+        }
+        &.center {
+          text-align: center;
+        }
       }
 
       tr {
@@ -166,7 +202,7 @@ export default {
       }
     }
     thead {
-      tr td {
+      tr th {
         padding: 10px 0;
       }
     }
