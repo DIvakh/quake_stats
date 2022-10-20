@@ -1,4 +1,5 @@
 <template>
+  <div class="empty" ref="chart"></div>
   <div class="charts">
     <Line :chart-data="chartData" :chart-options="options" />
   </div>
@@ -46,23 +47,15 @@ export default {
       gamedata: {},
       datasets: [],
       chartData: {
-        labels: [],
+        labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
         datasets: [
           {
             label: 'My First Dataset',
-            data: [65, 59, 80, 81, 56, 55, 40],
+            data: [0, 20, 20, 20, 70, 70, 70, 20, 20, 20, 0],
             fill: false,
             borderColor: 'rgb(75, 192, 192)',
             backgroundColor: 'teal',
-            tension: 0.1
-          },
-          {
-            label: 'My Second Dataset',
-            data: [90, 9, 34, 15, 46, 51, 99],
-            fill: false,
-            borderColor: 'red',
-            backgroundColor: 'red',
-            tension: 0.1
+            tension: 0.15
           }
         ]
       },
@@ -94,6 +87,30 @@ export default {
     };
   },
   methods: {
+    sortAndAddColor() {
+      this.datasets.sort((a, b) => {
+        return a.data[a.data.length - 1] > b.data[b.data.length - 1] ? -1 : 1;
+      });
+      const colors = [
+        '#6897bb',
+        '#ff4040',
+        '#ffff66',
+        '#ac7b06',
+        '#7b5804',
+        '#4a3502',
+        '#312302'
+      ];
+      this.datasets.forEach((el, i) => {
+        if (colors[i]) {
+          el.borderColor = colors[i];
+          el.backgroundColor = colors[i];
+        } else {
+          el.borderColor = '#312302';
+          el.backgroundColor = '#312302';
+        }
+      });
+    },
+
     parseLogData(id) {
       this.chartData.labels = [];
       this.datasets = [];
@@ -110,7 +127,9 @@ export default {
         if (!currentKiller) {
           this.datasets.push({
             label: kills[i].killer,
-            data: [0]
+            data: [0],
+            tension: 0.1,
+            pointRadius: 1
           });
         }
       }
@@ -121,21 +140,12 @@ export default {
           } else {
             item.data.push(item.data[item.data.length - 1]);
           }
-
-          if (item.label === 'twist') {
-            item.borderColor = 'red';
-            item.backgroundColor = 'red';
-          } else if (item.label === 'Ignat') {
-            item.borderColor = 'blue';
-            item.backgroundColor = 'blue';
-          } else {
-            item.borderColor = 'teal';
-            item.backgroundColor = 'teal';
-          }
         }
       }
+      this.chartData.labels.push(this.chartData.labels.length);
 
       this.chartData.datasets = this.datasets;
+      this.sortAndAddColor();
     }
   },
   watch: {
@@ -145,8 +155,19 @@ export default {
         this.parseLogData(this.id);
       }
     }
+  },
+  mounted() {
+    this.parseLogData(this.id);
+    this.$refs.chart.scrollIntoView({ behavior: 'smooth' });
   }
 };
 </script>
 
-<style></style>
+<style>
+.empty {
+  padding-bottom: 100px;
+}
+.charts {
+  margin-top: -50px;
+}
+</style>

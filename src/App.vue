@@ -20,6 +20,7 @@
   </header>
   <main>
     <Logs v-if="state === 'logs'" :logs="logs" />
+    <Controls @click="controlsHandler" />
     <Index
       v-if="state === 'index'"
       :gameData="gameData"
@@ -34,6 +35,7 @@ import Index from './components/Index';
 import Pagination from './components/Pagination';
 import Logs from './components/Logs';
 import Chart from './components/Chart';
+import Controls from './components/Controls';
 export default {
   name: 'App',
 
@@ -42,6 +44,7 @@ export default {
       ffaLink: '/api/ffa',
       playersLink: '/api/ffa/players',
       pageCounter: 1,
+      logsPage: 1,
       state: 'logs',
 
       gameData: {},
@@ -59,10 +62,15 @@ export default {
         console.error(e);
       }
     },
-    async getLogsData() {
-      let response = await fetch('/api/ffa/logs?page=1&perpage=20');
-      let data = await response.json();
-      this.logs = data;
+    async getLogsData(page) {
+      try {
+        let response = await fetch(`/api/ffa/logs?page=${page}&perpage=3`);
+        let data = await response.json();
+        this.logs = data;
+        console.log(data);
+      } catch (e) {
+        console.error(e);
+      }
     },
     async getFfa() {
       this.gameData = await this.sendRequest(this.ffaLink);
@@ -74,14 +82,41 @@ export default {
 
     clickHandler(e) {
       this.state = e.target.dataset.state;
+    },
+    controlsHandler(e) {
+      if (e.target.classList.contains('back') && this.logsPage > 1) {
+        this.logsPage--;
+        this.getLogsData(this.logsPage);
+      } else if (e.target.classList.contains('next')) {
+        this.logsPage++;
+        this.getLogsData(this.logsPage);
+      }
+    },
+
+    btnDisabler() {
+      if (this.logsPage === 1) {
+        document.querySelector('button.back').classList.add('disabled');
+      } else {
+        document.querySelector('button.back').classList.remove('disabled');
+      }
     }
   },
   beforeMount() {
     this.getFfa();
     this.getPlayers();
-    this.getLogsData();
+    this.getLogsData(this.logsPage);
   },
-  components: { Pagination, Logs, Chart, Index }
+  mounted() {
+    this.btnDisabler();
+  },
+  watch: {
+    logsPage: {
+      handler() {
+        this.btnDisabler();
+      }
+    }
+  },
+  components: { Pagination, Logs, Chart, Index, Controls }
 };
 </script>
 
