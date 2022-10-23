@@ -1,5 +1,5 @@
 <template>
-  <section @click="test" class="daydata">
+  <section class="daydata">
     <h2>Games</h2>
     <div class="container">
       <div class="game" v-for="game in dayData">
@@ -92,7 +92,7 @@ export default {
       try {
         let response = await fetch(`/api/ffa/matches?page=${page}&perpage=6`);
         let data = await response.json();
-        console.log(data);
+        // console.log(data);
         for (let item of data) {
           this.dayData.push(item);
         }
@@ -119,6 +119,9 @@ export default {
   },
   mounted() {
     window.onscroll = this.debounce(this.scrollingData, 300);
+  },
+  beforeUnmount() {
+    window.onscroll = null;
   },
   components: { Spinner }
 };

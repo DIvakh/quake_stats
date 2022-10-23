@@ -16,17 +16,28 @@
           {{ winner.name }}: {{ winner.wins }}
         </div>
       </section>
+      <section class="button">
+        <button @click="changeView">
+          {{ state === 'frags' ? 'INFORMATION' : 'FRAGS' }}
+        </button>
+      </section>
     </div>
   </header>
   <main>
-    <Logs v-if="state === 'logs'" :logs="logs" />
-    <Controls @click="controlsHandler" />
+    <Logs
+      @click="controlsHandler"
+      v-if="state === 'frags'"
+      :state="state"
+      :logs="logs"
+      :logsPage="logsPage"
+    />
+
     <Index
-      v-if="state === 'index'"
+      v-if="state === 'information'"
       :gameData="gameData"
       :playersData="playersData"
     />
-    <Pagination v-if="state === 'index'" />
+    <Pagination v-if="state === 'information'" />
   </main>
 </template>
 
@@ -34,8 +45,7 @@
 import Index from './components/Index';
 import Pagination from './components/Pagination';
 import Logs from './components/Logs';
-import Chart from './components/Chart';
-import Controls from './components/Controls';
+
 export default {
   name: 'App',
 
@@ -44,12 +54,13 @@ export default {
       ffaLink: '/api/ffa',
       playersLink: '/api/ffa/players',
       pageCounter: 1,
-      logsPage: 1,
-      state: 'logs',
+
+      state: 'information',
 
       gameData: {},
       playersData: {},
-      logs: []
+      logs: [],
+      logsPage: 1
     };
   },
   methods: {
@@ -72,6 +83,16 @@ export default {
         console.error(e);
       }
     },
+    controlsHandler(e) {
+      if (e.target.classList.contains('back') && this.logsPage > 1) {
+        --this.logsPage;
+        this.getLogsData(this.logsPage);
+      } else if (e.target.classList.contains('next')) {
+        ++this.logsPage;
+        this.getLogsData(this.logsPage);
+      }
+    },
+
     async getFfa() {
       this.gameData = await this.sendRequest(this.ffaLink);
     },
@@ -79,26 +100,8 @@ export default {
     async getPlayers() {
       this.playersData = await this.sendRequest(this.playersLink);
     },
-
-    clickHandler(e) {
-      this.state = e.target.dataset.state;
-    },
-    controlsHandler(e) {
-      if (e.target.classList.contains('back') && this.logsPage > 1) {
-        this.logsPage--;
-        this.getLogsData(this.logsPage);
-      } else if (e.target.classList.contains('next')) {
-        this.logsPage++;
-        this.getLogsData(this.logsPage);
-      }
-    },
-
-    btnDisabler() {
-      if (this.logsPage === 1) {
-        document.querySelector('button.back').classList.add('disabled');
-      } else {
-        document.querySelector('button.back').classList.remove('disabled');
-      }
+    changeView(e) {
+      this.state = e.target.textContent.toLowerCase();
     }
   },
   beforeMount() {
@@ -106,17 +109,8 @@ export default {
     this.getPlayers();
     this.getLogsData(this.logsPage);
   },
-  mounted() {
-    this.btnDisabler();
-  },
-  watch: {
-    logsPage: {
-      handler() {
-        this.btnDisabler();
-      }
-    }
-  },
-  components: { Pagination, Logs, Chart, Index, Controls }
+
+  components: { Pagination, Logs, Index }
 };
 </script>
 
@@ -172,12 +166,44 @@ header {
   right: 0;
   backdrop-filter: blur(10px);
   .container {
+    position: relative;
     width: calc(100% - 20px);
     display: flex;
     justify-content: center;
     gap: 50px;
     align-items: center;
     padding: 13px 0;
+
+    section.button {
+      position: absolute;
+      right: 0;
+
+      @media (max-width: 599px) {
+        order: 0;
+        position: static;
+      }
+
+      button {
+        background: transparent;
+
+        color: #d5dfe9;
+        border: none;
+        padding: 7px 15px;
+        line-height: 1;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: underline;
+        @media (min-width: 1199px) {
+          text-decoration: none;
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+        @media (max-width: 599px) {
+          padding: 10px 45px;
+        }
+      }
+    }
 
     * {
       align-self: center;
@@ -193,16 +219,15 @@ header {
 }
 .winners {
   display: flex;
-  // gap: 1rem;
+
   justify-content: center;
   flex-wrap: wrap;
 
-  @media (min-width: 600px) and (max-width: 899px) {
-    flex-shrink: 2;
-  }
-
   @media (max-width: 599px) {
     gap: 5px;
+  }
+  @media (min-width: 600px) and (max-width: 899px) {
+    flex-shrink: 2;
   }
   .winner {
     margin-right: 1rem;
@@ -228,7 +253,7 @@ h2 {
   text-transform: uppercase;
 
   @media (max-width: 599px) {
-    padding-top: 65px;
+    padding-top: 115px;
   }
 }
 h3 {
@@ -261,10 +286,6 @@ h3 {
       @media (max-width: 599px) {
         width: calc(100% / 2 - 8px);
       }
-
-      // &:hover {
-      //   backdrop-filter: brightness(1.2) contrast(0.94);
-      // }
 
       h3 {
         margin-top: 1rem;

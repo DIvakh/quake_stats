@@ -5,37 +5,36 @@
       <div class="tables">
         <div class="table" v-for="game of tableLogs">
           <Chart v-if="id === game.id" :logs="logs" :id="game.id" />
-          <table @click="clickHandler" :data-id="game.id">
-            <thead>
-              <tr>
-                <th>
-                  date: &nbsp;
-                  {{ game.date.replace(/[A-Z]|\.\d+/gm, ' ') }}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="row">
-                <td class="center" v-for="(kills, player) in game.kills">
-                  {{ player }}
-                </td>
-              </tr>
-              <tr class="row" v-for="(kills, player, i) in game.kills">
-                <td>{{ player }}</td>
-                <td class="center" v-for="kill in kills">
-                  {{ kill }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="tbox">
+            <table @click="clickHandler" :data-id="game.id">
+              <div class="date">
+                {{ game.date.replace(/[A-Z]|\.\d+/gm, ' ') }}
+              </div>
+              <tbody>
+                <tr class="row">
+                  <td class="center" v-for="(kills, player) in game.kills">
+                    {{ player }}
+                  </td>
+                </tr>
+                <tr class="row" v-for="(kills, player, i) in game.kills">
+                  <td>{{ player }}</td>
+                  <td class="center" v-for="kill in kills">
+                    {{ kill }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
           <div :class="id === game.id ? 'border' : ''"></div>
         </div>
       </div>
     </div>
+    <Controls v-if="state === 'frags'" />
   </section>
 </template>
 <script>
 import Chart from './Chart.vue';
+import Controls from './Controls.vue';
 export default {
   data() {
     return {
@@ -45,18 +44,25 @@ export default {
     };
   },
   props: {
-    logs: {
-      type: Array,
+    state: {
+      type: String,
       required: true
+    },
+    logs: {
+      type: Array
+    },
+    logsPage: {
+      type: Number
     }
   },
-  components: { Chart },
+  components: { Chart, Controls },
   methods: {
     clickHandler(e) {
       if (this.id !== e.currentTarget.dataset.id) {
         this.id = e.currentTarget.dataset.id;
       } else this.id = '';
     },
+
     parseLogData() {
       // this.logs.push({
       //   id: '634d1546e5ccba7173ce97e7',
@@ -293,7 +299,9 @@ export default {
       //     }
       //   ]
       // });
+
       if (this.logs) {
+        this.tableLogs = [];
         for (let game of this.logs) {
           let sorted = this.groupBy(game.kills, 'killer');
           let gameObj = {};
@@ -362,24 +370,28 @@ export default {
         }, {});
     },
     renderTable() {
-      let tables = document.querySelectorAll('table');
-      tables.forEach((e) => {
-        let counter = 0;
-        e.querySelectorAll('tr.row').forEach((el, i, array) => {
-          let emptyCell = document.createElement('td');
-          emptyCell.textContent = ' ';
-          emptyCell.classList.add('empty');
-
-          el.querySelectorAll('td').forEach((elem, ind, arr) => {
-            if (ind === counter) {
-              elem.before(emptyCell);
-            } else if (counter === arr.length && i === array.length - 1) {
-              elem.after(emptyCell);
-            }
-          });
-          counter++;
-        });
+      document.querySelectorAll('td.empty').forEach((e) => {
+        e.remove();
       });
+      if (!document.querySelector('td.empty')) {
+        let tables = document.querySelectorAll('table');
+        tables.forEach((e) => {
+          let counter = 0;
+          e.querySelectorAll('tr.row').forEach((el, i, array) => {
+            let emptyCell = document.createElement('td');
+            emptyCell.textContent = ' ';
+            emptyCell.classList.add('empty');
+            el.querySelectorAll('td').forEach((elem, ind, arr) => {
+              if (ind === counter) {
+                elem.before(emptyCell);
+              } else if (counter === arr.length && i === array.length - 1) {
+                elem.after(emptyCell);
+              }
+            });
+            counter++;
+          });
+        });
+      }
     },
     sort(obj) {
       return Object.fromEntries(
@@ -387,16 +399,33 @@ export default {
           return a < b ? -1 : 1;
         })
       );
+    },
+    btnDisabler() {
+      if (this.logsPage === 1) {
+        document.querySelector('button.back').classList.add('disabled');
+      } else {
+        document.querySelector('button.back').classList.remove('disabled');
+      }
     }
   },
+  async beforeMount() {
+    await this.parseLogData();
+    await this.renderTable();
+  },
+  mounted() {
+    this.btnDisabler();
+  },
   watch: {
+    logsPage: {
+      handler() {
+        this.btnDisabler();
+      }
+    },
     logs: {
       required: true,
       async handler() {
-        if (this.logs) {
-          await this.parseLogData();
-          await this.renderTable();
-        }
+        await this.parseLogData();
+        await this.renderTable();
       }
     }
   }
@@ -417,6 +446,17 @@ export default {
 }
 section.logs {
   .container {
+    @media (max-width: 599px) {
+      margin-top: 20px;
+      max-width: calc(100% - 2px);
+    }
+    .table {
+      .tbox {
+        @media (max-width: 599px) {
+          overflow-x: scroll;
+        }
+      }
+    }
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -427,13 +467,34 @@ section.logs {
     }
     .charts {
       width: 50%;
+
+      @media (max-width: 599px) {
+        width: 100%;
+      }
       margin-left: auto;
       margin-right: auto;
     }
     table {
+      @media (max-width: 599px) {
+        position: relative;
+      }
+      .date {
+        margin-bottom: 5px;
+
+        padding-left: 5px;
+        color: rgba(255, 255, 255, 0.85);
+        @media (max-width: 599px) {
+          position: absolute;
+          top: -20px;
+        }
+      }
       cursor: pointer;
       margin: 50px auto;
+      @media (max-width: 599px) {
+        margin: 40px auto 15px auto;
+      }
       font-size: 1.15rem;
+
       tbody {
         td {
           padding: 10px;

@@ -163,9 +163,13 @@ export default {
 };
 </script>
 
-<style>
+<style lang="scss">
 .empty {
   padding-bottom: 100px;
+
+  @media (max-width: 599px) {
+    padding-bottom: 180px;
+  }
 }
 .charts {
   margin-top: -50px;
